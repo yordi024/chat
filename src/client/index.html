@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
+    <script type="module">
+      import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
+
+      const socket = io()
+
+      const $form = document.getElementById('form')
+      const $input = document.getElementById('input')
+      const $messages = document.getElementById('messages')
+
+      socket.on('chatMessage', (msg) => {
+        const item = `<li>${msg}</li>`
+        $messages.insertAdjacentHTML('beforeend', item)
+      })
+
+      $form.addEventListener('submit', (e) => {
+        e.preventDefault()
+
+        if ($input.value) {
+          socket.emit('chatMessage', $input.value)
+          $input.value = ''
+        }
+      })
+      //const res = await fetch('https://random-data-api.com/api/users/random_user')
+    </script>
     <style>
         *,
         *::before,
@@ -89,8 +113,9 @@
 </head>
 <body>
     <section id="chat">
+      <ul id="messages"></ul>
         <form id="form">
-            <input type="text" id="message" name="message" placeholder="Type a message" autocomplete="off"/>
+            <input type="text" id="input" name="message" placeholder="Type a message" autocomplete="off"/>
             <button type="submit">Enviar</button>
         </form>
     </section>
