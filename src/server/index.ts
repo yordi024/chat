@@ -20,11 +20,13 @@ io.on('connection', async (socket) => {
 
     socket.on('chatMessage', async (msg) => {
         let result
+        
+        const username = socket.handshake.auth.username ?? ''
 
         try {
             result = await db.execute({
-                sql: 'INSERT INTO messages (content) VALUES (:msg)',
-                args: { msg }
+                sql: 'INSERT INTO messages (content, user) VALUES (:msg, :username)',
+                args: { msg, username }
             })
         } catch (error) {
             console.log(error)
@@ -43,7 +45,7 @@ io.on('connection', async (socket) => {
             })
 
             result.rows.forEach(row => {
-                socket.emit('chatMessage', row.content, row?.id)
+                socket.emit('chatMessage', row.content, row?.id, row.user)
             })
         } catch (error) {
             console.log(error)
