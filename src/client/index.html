@@ -7,15 +7,35 @@
     <script type="module">
       import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js'
 
-      const socket = io()
+      const getUserName = async () => {
+        const username = localStorage.getItem('username')
+
+        if (!username) {
+          const res = await fetch('https://random-data-api.com/api/users/random_user')
+          const { username: randomUsername } = await res.json()
+
+          localStorage.setItem('username', randomUsername)
+          username = randomUsername
+        }
+
+        return username
+      }
+
+      const socket = io({
+        auth: {
+          username: await getUsername(),
+          serverOffset: 0
+        }
+      })
 
       const $form = document.getElementById('form')
       const $input = document.getElementById('input')
       const $messages = document.getElementById('messages')
 
-      socket.on('chatMessage', (msg) => {
+      socket.on('chatMessage', (msg, serverOffset) => {
         const item = `<li>${msg}</li>`
         $messages.insertAdjacentHTML('beforeend', item)
+        socket.auth.serverOffset = serverOffset
       })
 
       $form.addEventListener('submit', (e) => {
@@ -26,7 +46,6 @@
           $input.value = ''
         }
       })
-      //const res = await fetch('https://random-data-api.com/api/users/random_user')
     </script>
     <style>
         *,
